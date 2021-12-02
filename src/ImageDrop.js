@@ -13,6 +13,7 @@ export class ImageDrop {
 	constructor(quill, options = {}) {
 		// save the quill reference
 		this.quill = quill;
+		this.options = options;
 		// bind handlers to this instance
 		this.handleDrop = this.handleDrop.bind(this);
 		this.handlePaste = this.handlePaste.bind(this);
@@ -82,15 +83,19 @@ export class ImageDrop {
 				// Note that some file formats such as psd start with image/* but are not readable
 				return;
 			}
-			// set up file reader
-			const reader = new FileReader();
-			reader.onload = (evt) => {
-				callback(evt.target.result);
-			};
+
 			// read the clipboard item or file
 			const blob = file.getAsFile ? file.getAsFile() : file;
 			if (blob instanceof Blob) {
-				reader.readAsDataURL(blob);
+
+				if (this.options && this.options.urlHook) {
+					this.options.urlHook(blob, callback);
+				} else {
+					// set up file reader
+					const reader = new FileReader();
+					reader.onload = (evt) => { callback(evt.target.result); };
+					reader.readAsDataURL(blob);
+				}
 			}
 		});
 	}
