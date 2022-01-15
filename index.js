@@ -1,3 +1,5 @@
+var Delta = Quill.import('delta');
+
 /**
  * Custom module for quilljs to allow user to drag images from their file system into the editor
  * and paste images from clipboard (Works on Chrome, Firefox, Edge, not on Safari)
@@ -20,6 +22,8 @@ export class ImageDrop {
 		// listen for drop and paste events
 		this.quill.root.addEventListener('drop', this.handleDrop, false);
 		this.quill.root.addEventListener('paste', this.handlePaste, false);
+		// do not handle pasted images via matchers (-> avoids embedding base64 images)
+		quill.clipboard.addMatcher('IMG', () => new Delta());
 	}
 
 	/**
@@ -45,7 +49,6 @@ export class ImageDrop {
 	 * @param {Event} evt
 	 */
 	handlePaste(evt) {
-		evt.preventDefault();
 		if (evt.clipboardData && evt.clipboardData.items && evt.clipboardData.items.length) {
 			this.readFiles(evt.clipboardData.items, this.insert.bind(this));
 		}
@@ -77,7 +80,6 @@ export class ImageDrop {
 			// read the clipboard item or file
 			const blob = file.getAsFile ? file.getAsFile() : file;
 			if (blob instanceof Blob) {
-
 				if (this.options && this.options.urlHook) {
 					this.options.urlHook(blob, callback);
 				} else {
