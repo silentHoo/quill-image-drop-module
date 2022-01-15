@@ -22,8 +22,8 @@ export class ImageDrop {
 		// listen for drop and paste events
 		this.quill.root.addEventListener('drop', this.handleDrop, false);
 		this.quill.root.addEventListener('paste', this.handlePaste, false);
-		// do not handle pasted images via matchers (-> avoids embedding base64 images)
-		quill.clipboard.addMatcher('IMG', () => new Delta());
+		// do not handle base64 images
+		quill.clipboard.addMatcher('img[src^="data:image"]', () => new Delta());
 	}
 
 	/**
