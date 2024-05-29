@@ -30,7 +30,6 @@ export class ImageDrop {
    * @param {Event} evt
    */
   handleDrop(evt) {
-    evt.preventDefault();
     if (
       evt.dataTransfer &&
       evt.dataTransfer.files &&
@@ -48,7 +47,7 @@ export class ImageDrop {
           );
         }
       }
-      this.readFiles(evt.dataTransfer.files, this.insert.bind(this));
+      this.readFiles(evt.dataTransfer.files, this.insert.bind(this), evt);
     }
   }
 
@@ -57,13 +56,18 @@ export class ImageDrop {
    * @param {Event} evt
    */
   handlePaste(evt) {
-    evt.preventDefault();
     if (
       evt.clipboardData &&
       evt.clipboardData.items &&
       evt.clipboardData.items.length
     ) {
-      this.readFiles(evt.clipboardData.items, this.insert.bind(this));
+      this.readFiles(
+        evt.clipboardData.items,
+        (dataUrl) => {
+          setTimeout(() => this.insert(dataUrl), 0);
+        },
+        evt
+      );
     }
   }
 
@@ -82,7 +86,7 @@ export class ImageDrop {
    * @param {File[]} files  One or more File objects
    * @param {Function} callback  A function to send each data URI to
    */
-  readFiles(files, callback) {
+  readFiles(files, callback, eventToStopIfImageDropOrPasteEvent) {
     // check each file for an image
     [].forEach.call(files, (file) => {
       if (
@@ -94,6 +98,8 @@ export class ImageDrop {
         // Note that some file formats such as psd start with image/* but are not readable
         return;
       }
+
+      eventToStopIfImageDropOrPasteEvent.preventDefault();
 
       // read the clipboard item or file
       const blob = file.getAsFile ? file.getAsFile() : file;
